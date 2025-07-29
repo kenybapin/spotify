@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Listening Stats</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="user-info">
+        <img id="profile-pic" src="" class="profile-img" />
+        <h1><span id="username">Spotify</span>'s Listening</h1>
+      </div>
+      <p id="login-message">Please log in to view your listening stats ...&nbsp;</p>
+
+      <div class="connection">
+        <button id="login-button" onclick="redirectToSpotify()">Login</button>
+        <button id="logout-button" onclick="logout()" style="display: none;">Log out</button>
+        <button id="contact-button" onclick="window.location.href='https://kenybapin.github.io/'">Contact</button>
+        <button id="contact-button" onclick="window.location.href='contact.html'">Github</button>
+
+
+      </div>
+    </header>
+
+    <section class="stats">
+      <div class="card liked-card">
+        <h2>❤︎<br>Liked</h2>
+        <p id="liked-count">–</p>
+      </div>
+      <div class="card followers-card">
+        <h2>☺<br>Followers</h2>
+        <p id="followers-count">–</p>
+      </div>
+      <div class="card following-card">
+        <h2>♬<br>Artists</h2>
+        <p id="following-count">–</p>
+      </div>
+      <div class="card playlists-card">
+        <h2>★<br>Playlists</h2>
+        <p id="playlists-count">–</p>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <h2>Top Genres</h2>
+      <ul id="top-genres"></ul>
+    </section>
+
+    <section class="list-section">
+      <h2>Recommendations</h2>
+      <ul id="recommendations-list" class="track-list"></ul>
+    </section>
+
+    <section class="list-section">
+      <h2>Recently Played</h2>
+      <ul id="recent-tracks" class="track-list"></ul>
+    </section>
+
+    <section class="list-section">
+      <h2>Top Songs</h2>
+      <ul id="top-tracks" class="track-list"></ul>
+    </section>
+
+
+
+
+    <section class="list-section">
+      <h2>Top album</h2>
+      <div id="spotify-embed" style="left: 0; width: 100%; height: 352px; position: relative;"></div>
+    </section>
+
+
+
+  </div>
+
+  <footer id="site-footer">
+    <p>
+      A track must be played for more than 30 seconds to be included in play history.<br>
+      No listening data is stored or shared — all information is retrieved securely via the Spotify API and processed
+      locally in your browser.<br>
+      Artist images and album covers are provided by Spotify.<br>
+      This site is not affiliated, associated, authorized, endorsed by, or in any way officially connected with
+      Spotify.<br><br>
+      Spotify is a trademark of Spotify AB.
+    </p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
