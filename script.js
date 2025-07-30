@@ -85,11 +85,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-message').style.display = 'none';
     document.getElementById('login-button').style.display = 'none';
     document.getElementById('logout-button').style.display = 'flex';
+    document.querySelectorAll('.card, .list-section').forEach(element => {
+      element.style.filter = 'none';
+    });
   } else {
     document.getElementById('login-message').style.display = 'flex';
     document.getElementById('login-button').style.display = 'flex';
     document.getElementById('logout-button').style.display = 'none';
     document.getElementById('profile-pic').style.display = 'none';
+        document.querySelectorAll('.card, .list-section').forEach(element => {
+      element.style.filter = 'grayscale(1)';
+    });
   }
 });
 
