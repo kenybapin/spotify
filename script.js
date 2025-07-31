@@ -102,12 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Log out function
 function logout() {
   localStorage.removeItem('access_token');
-  // You can redirect instead of reload if needed
-  // location.href = '/';
+  location.reload();
 }
-
-// Attach logout on page unload
-window.addEventListener('unload', logout);
 
 
 // Main dashboard logic (runs on index.html)
