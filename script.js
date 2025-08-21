@@ -282,37 +282,48 @@ fetch('https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=long_term', 
 
 // Share button functionality
 document.getElementById("shareBtn").addEventListener("click", async () => {
-  const container = document.querySelector(".container"); // the part to capture
-  const connectionDiv = document.querySelector(".connection"); // element to hide
+  const container = document.querySelector(".container");
+  const connectionDiv = document.querySelector(".connection");
+  const username = document.getElementById("username")?.textContent || "spotify-user";
 
-  // hide the connection div before capture
+  // Hide elements you don't want in the screenshot
   if (connectionDiv) connectionDiv.style.display = "none";
 
   html2canvas(container, { useCORS: true, logging: false }).then(async (canvas) => {
-    // restore the connection div after capture
+    // Restore hidden elements
     if (connectionDiv) connectionDiv.style.display = "";
 
     canvas.toBlob(async (blob) => {
-      const username = document.getElementById("username")?.textContent || "spotify-user";
       const file = new File([blob], `${username}-spotify-stats.png`, { type: "image/png" });
 
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        try {
+      try {
+        // Native share (works on Android and iOS Safari)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             title: "My Spotify Stats 🎵",
             files: [file]
           });
-        } catch (err) {
-          console.error("Share failed:", err);
+        } 
+        // Clipboard fallback (iOS 16+ / modern browsers)
+        else if (navigator.clipboard && navigator.clipboard.write) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          alert("Image copied to clipboard! You can now paste it anywhere.");
+        } 
+        // Fallback: download the image
+        else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${username}-spotify-stats.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          alert("Image downloaded! You can now share it manually.");
         }
-      } else {
-        // fallback: download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${username}-spotify-stats.png`;
-        a.click();
-        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Sharing failed:", err);
+        alert("Sharing failed. You can still download the image.");
       }
     });
   });
