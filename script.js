@@ -98,6 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.card, .list-section').forEach(element => {
   element.style.filter = 'grayscale(1)';
 });
+  // force logout if no token
+  const logoutBtn = document.getElementById('logout-button');
+  if (logoutBtn) {
+    logoutBtn.click();
+  }
   }
 });
 
