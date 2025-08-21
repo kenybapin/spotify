@@ -3,7 +3,7 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f7f9fb;
   color: #333;
-    display: grid;
+  display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
   margin: 0;
@@ -103,14 +103,17 @@ header button:hover {
   background: #f97147;
   border-bottom: #ac3d18 4px solid;
 }
+
 .followers-card {
   background: #74b9ff;
   border-bottom: #0984e3 4px solid;
 }
+
 .following-card {
   background: #faaa0e;
   border-bottom: #d35400 4px solid;
 }
+
 .playlists-card {
   background: #63d67d;
   border-bottom: #27ae60 4px solid;
@@ -173,12 +176,15 @@ header button:hover {
 
 /* New CSS for links */
 .track-list a {
-  text-decoration: none; /* Removes the underline */
-  color: inherit; /* Makes the link color inherit from its parent */
+  text-decoration: none;
+  /* Removes the underline */
+  color: inherit;
+  /* Makes the link color inherit from its parent */
 }
 
 .track-list a:hover {
-  text-decoration: underline; /* Optional: Adds underline on hover for better UX */
+  text-decoration: underline;
+  /* Optional: Adds underline on hover for better UX */
 }
 
 .track-list span {
@@ -188,7 +194,8 @@ header button:hover {
 }
 
 .track-list strong a {
-  font-weight: bold; /* Ensures artist links remain bold */
+  font-weight: bold;
+  /* Ensures artist links remain bold */
 }
 
 .user-info {
@@ -225,7 +232,7 @@ header button:hover {
   border-radius: 8px;
   box-shadow: none;
   transition: opacity 0.2s ease;
-  
+
   cursor: default;
 }
 
@@ -234,7 +241,7 @@ header button:hover {
 }
 
 
-#top-album  img {
+#top-album img {
   width: 120px;
   height: 120px;
   border-radius: 8px;
@@ -268,36 +275,56 @@ header button:hover {
   padding-bottom: 300px;
 }
 
-  .hand-title{
-    text-align:center;
-    line-height:1.95;
-    margin: 0 auto;
-  }
+.hand-title {
+  text-align: center;
+  line-height: 1.95;
+  margin: 0 auto;
+}
 
-  .hand-title .big{
-    font-family: "Pacifico", cursive;
-    font-size: 60px;
-    font-weight: 400;
-    line-height: 55px;
-    color: #111;
-    letter-spacing: 1px;
-    /* text-shadow: 0 4px 12px rgba(0,0,0,.15); */
-  }
+.hand-title .big {
+  font-family: "Pacifico", cursive;
+  font-size: 60px;
+  font-weight: 400;
+  line-height: 55px;
+  color: #111;
+  letter-spacing: 1px;
+  /* text-shadow: 0 4px 12px rgba(0,0,0,.15); */
+}
 
-  .hand-title .sub{
-    display:block;
-    margin-top:.5rem;
-    font-size: 20px;
-    font-family: "Inter", system-ui, sans-serif;
-    letter-spacing:.15em;
-    text-transform: uppercase;
-    font-weight:600;
-    line-height: 20px;
-    color:#444;
-    opacity:.85;
-  }
+.hand-title .sub {
+  display: block;
+  margin-top: .5rem;
+  font-size: 20px;
+  font-family: "Inter", system-ui, sans-serif;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 20px;
+  color: #444;
+  opacity: .85;
+}
 
-  #login-message {
-   display: flex;
-   justify-content: center;
-  }
+#login-message {
+  display: flex;
+  justify-content: center;
+}
+
+#previewModal button {
+  color: white;
+  cursor: pointer;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background: #80808070;
+  border: 1px solid gray;
+  border-bottom: #4a4a4a 4px solid;
+  border-radius: 5px;
+}
+
+#previewModal img {
+  /* width: 60%; */
+  object-fit: cover;
+  object-position: top;
+}
+button:active {
+  transform: translateY(2px);
+}
