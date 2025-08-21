@@ -1,5 +1,6 @@
 const clientId = 'cc57db2e4e4d4f1ca09307a25f8a2e50';
 const redirectUri = location.origin + location.pathname.replace(/\/[^/]*$/, '') + '/callback.html';
+
 const scopes = [
   'user-read-recently-played',
   'user-library-read',
@@ -145,7 +146,7 @@ if (location.pathname.endsWith('index.html') && localStorage.getItem('access_tok
     });
 
   // 5. Recently Played
-  fetch('https://api.spotify.com/v1/me/player/recently-played?limit=6', { headers })
+  fetch('https://api.spotify.com/v1/me/player/recently-played?limit=4', { headers })
     .then(res => res.json())
     .then(data => {
       const list = document.getElementById('recent-tracks');
@@ -168,7 +169,7 @@ if (location.pathname.endsWith('index.html') && localStorage.getItem('access_tok
     });
 
   // 6. Top Tracks
-  fetch('https://api.spotify.com/v1/me/top/tracks?limit=6&time_range=long_term', { headers })
+  fetch('https://api.spotify.com/v1/me/top/tracks?limit=4&time_range=long_term', { headers })
     .then(res => res.json())
     .then(data => {
       const list = document.getElementById('top-tracks');
@@ -211,46 +212,48 @@ if (location.pathname.endsWith('index.html') && localStorage.getItem('access_tok
       });
     });
 
-    // 8. Top Album
+
+    // 8. Top Albums
 fetch('https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=long_term', { headers })
-    .then(res => res.json())
-    .then(data => {
-      const albumMap = new Map();
+  .then(res => res.json())
+  .then(data => {
+    const albumMap = new Map();
 
-      data.items.forEach(track => {
-        const album = track.album;
-        if (!albumMap.has(album.id)) {
-          albumMap.set(album.id, {
-            ...album,
-            count: 0
-          });
-        }
-        albumMap.get(album.id).count++;
-      });
-
-      // Sort by play count and keep only the most listened album
-      const [topAlbum] = Array.from(albumMap.values())
-        .sort((a, b) => b.count - a.count);
-
-      if (topAlbum) {
-        const list = document.getElementById('top-album');
-        const li = document.createElement('li');
-
-        const albumImage = topAlbum.images[1]?.url || '';
-        const albumLink = `<a href="https://open.spotify.com/album/${topAlbum.id}" target="_blank"><img src="${albumImage}" alt="${topAlbum.name}" /></a>`;
-        const artistLinks = topAlbum.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
-
-        li.innerHTML = `
-          ${albumLink}
-          <div>
-            <strong>${artistLinks}</strong><br>
-            <span>${topAlbum.name}</span>
-          </div>
-        `;
-
-        list.appendChild(li);
+    // Count how many times each album appears
+    data.items.forEach(track => {
+      const album = track.album;
+      if (!albumMap.has(album.id)) {
+        albumMap.set(album.id, { ...album, count: 0 });
       }
+      albumMap.get(album.id).count++;
     });
+
+    // Sort albums by play count descending
+    const topAlbums = Array.from(albumMap.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 2); // Take top 2 albums
+
+    const list = document.getElementById('top-album');
+    
+    topAlbums.forEach(album => {
+      const li = document.createElement('li'); // Keep <li>
+
+      const albumImage = album.images[1]?.url || '';
+      const albumLink = `<a href="https://open.spotify.com/album/${album.id}" target="_blank"><img src="${albumImage}" alt="${album.name}" /></a>`;
+      const artistLinks = album.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
+
+      li.innerHTML = `
+        ${albumLink}
+        <div>
+          <strong>${artistLinks}</strong><br>
+          <span>${album.name}</span>
+        </div>
+      `;
+
+      list.appendChild(li);
+    });
+  });
+
 
     // 9. User Playlists
       fetch('https://api.spotify.com/v1/me/playlists?limit=10', { headers })
@@ -281,50 +284,71 @@ fetch('https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=long_term', 
 }
 
 // Share button functionality
-document.getElementById("shareBtn").addEventListener("click", async () => {
+const shareBtn = document.getElementById("shareBtn");
+const previewModal = document.getElementById("previewModal");
+const previewImg = document.getElementById("previewImg");
+const closePreview = document.getElementById("closePreview");
+const shareConfirm = document.getElementById("shareConfirm");
+const copyConfirm = document.getElementById("copyConfirm");
+const downloadConfirm = document.getElementById("downloadConfirm");
+
+shareBtn.addEventListener("click", async () => {
   const container = document.querySelector(".container");
   const connectionDiv = document.querySelector(".connection");
   const username = document.getElementById("username")?.textContent || "spotify-user";
 
-  // Hide elements you don't want in the screenshot
   if (connectionDiv) connectionDiv.style.display = "none";
 
-  html2canvas(container, { useCORS: true, logging: false }).then(async (canvas) => {
-    // Restore hidden elements
+  html2canvas(container, { useCORS: true, logging: false }).then((canvas) => {
     if (connectionDiv) connectionDiv.style.display = "";
 
-    canvas.toBlob(async (blob) => {
-      const file = new File([blob], `${username}-spotify-stats.png`, { type: "image/png" });
+    // Show preview
+    previewImg.src = canvas.toDataURL("image/png");
+    previewModal.style.display = "flex";
 
-      try {
-        // Native share (works on Android and iOS Safari)
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: "My Spotify Stats 🎵",
-            files: [file]
-          });
-        } 
-        // Clipboard fallback (iOS 16+ / modern browsers)
-        else if (navigator.clipboard && navigator.clipboard.write) {
-          await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]);
-          alert("Image copied to clipboard! You can now paste it anywhere.");
-        } 
-        // Fallback: download the image
-        else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `${username}-spotify-stats.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-          alert("Image downloaded! You can now share it manually.");
-        }
-      } catch (err) {
-        console.error("Sharing failed:", err);
-        alert("Sharing failed. You can still download the image.");
-      }
+    // Prepare file for share/clipboard/download
+    canvas.toBlob((blob) => {
+      window.shareFile = new File([blob], `${username}-spotify-stats.png`, { type: "image/png" });
+      window.shareBlob = blob;
+      window.shareUsername = username;
     });
   });
+});
+
+// Close preview
+closePreview.addEventListener("click", () => {
+  previewModal.style.display = "none";
+});
+
+// Share (native)
+shareConfirm.addEventListener("click", async () => {
+  const file = window.shareFile;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ title: "My Spotify Stats 🎵", files: [file] });
+    }
+      previewModal.style.display = "none";
+
+});
+
+// Copy to clipboard
+copyConfirm.addEventListener("click", async () => {
+  const blob = window.shareBlob;
+    if (navigator.clipboard && navigator.clipboard.write) {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    } 
+  previewModal.style.display = "none";
+});
+
+// Download
+downloadConfirm.addEventListener("click", () => {
+  const blob = window.shareBlob;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${window.shareUsername}-spotify-stats.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  previewModal.style.display = "none";
 });
