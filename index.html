@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Spotify Listening Stats</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -13,18 +16,26 @@
     <header>
       <div class="user-info">
         <img id="profile-pic" src="" class="profile-img" />
-        <h1><span id="username">Spotify</span>'s Listening</h1>
+        <h1 class="hand-title">
+          <span class="big" id="username">Spotify<br>Stats</span>
+          <span class="sub" id="sub-title">Your Listening Stats</span>
+        </h1>
       </div>
-      <p id="login-message">Please log in to view your listening stats ...&nbsp;</p>
+
+
+
+
 
       <div class="connection">
         <button id="login-button" onclick="redirectToSpotify()">Login</button>
         <button id="logout-button" onclick="logout()" style="display: none;">Log out</button>
-        <button id="contact-button" onclick="window.location.href='https://kenybapin.github.io/'">Contact</button>
-        <button id="contact-button" onclick="window.location.href='https://github.com/kenybapin/spotify'">Github</button>
-
-
+        <button id="contact-button"
+          onclick="window.location.href='https://github.com/kenybapin/spotify'">Github</button>
+        <button id="shareBtn">Share with friends</button>
       </div>
+      <p id="login-message" style="display: flex; justify-content: center;">Please log in to view your Spotify listening
+        stats ...&nbsp;</p>
+
     </header>
 
     <section class="stats">
@@ -33,7 +44,7 @@
         <p id="liked-count">–</p>
       </div>
       <div class="card followers-card">
-        <h2>☺<br>Followers</h2>
+        <h2>☺<br>Subs</h2>
         <p id="followers-count">–</p>
       </div>
       <div class="card following-card">
@@ -52,27 +63,27 @@
     </section>
 
     <section class="list-section">
-      <h2>Recommendations</h2>
-      <ul id="recommendations-list" class="track-list"></ul>
+      <h2>Top Songs</h2>
+      <ul id="top-tracks" class="track-list"></ul>
     </section>
+
+<section class="list-section">
+  <h2>Top Album</h2>
+  <ul id="top-album" class="track-list"></ul>
+</section>
 
     <section class="list-section">
       <h2>Recently Played</h2>
       <ul id="recent-tracks" class="track-list"></ul>
     </section>
 
-    <section class="list-section">
-      <h2>Top Songs</h2>
-      <ul id="top-tracks" class="track-list"></ul>
-    </section>
 
 
 
-
-    <section class="list-section">
-      <h2>Top album</h2>
-      <div id="spotify-embed" style="left: 0; width: 100%; height: 352px; position: relative;"></div>
-    </section>
+<section class="list-section">
+  <h2>Your Playlists</h2>
+  <ul id="user-playlists" class="track-list"></ul>
+</section>
 
 
 
