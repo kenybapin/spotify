@@ -3,17 +3,21 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f7f9fb;
   color: #333;
+    display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  margin: 0;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 650px;
   margin: auto;
   padding: 2rem;
 }
 
 .connection {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 header {
@@ -45,10 +49,10 @@ header button:hover {
   border-bottom: #18ac4d 4px solid;
 }
 
-#logout-button:hover {
-  background: #ac3d18;
-  border: 1px solid #ac3d18;
-  border-bottom: #73280f 4px solid;
+#logout-button {
+  background: #df4f1f;
+  border: 1px solid #df4f1f;
+  border-bottom: #9a3514 4px solid;
 }
 
 #contact-button {
@@ -63,6 +67,20 @@ header button:hover {
   color: white;
   border: 1px solid gray;
   border-bottom: gray 4px solid;
+}
+
+#shareBtn {
+  background: #0177c1;
+  color: white;
+  border: 1px solid #0177c1;
+  border-bottom: #024e7d 4px solid;
+}
+
+#shareBtn:hover {
+  background: #005488;
+  color: white;
+  border: 1px solid #005488;
+  border-bottom: #002841 4px solid;
 }
 
 .stats {
@@ -137,8 +155,8 @@ header button:hover {
   background: white;
   border-radius: 12px;
   padding: 0.75rem;
-      border: 1px solid lightgray;
-    border-bottom: 4px solid lightgray;
+  border: 1px solid lightgray;
+  border-bottom: 4px solid lightgray;
   transition: transform 0.2s;
 }
 
@@ -153,14 +171,28 @@ header button:hover {
   margin-right: 1rem;
 }
 
+/* New CSS for links */
+.track-list a {
+  text-decoration: none; /* Removes the underline */
+  color: inherit; /* Makes the link color inherit from its parent */
+}
+
+.track-list a:hover {
+  text-decoration: underline; /* Optional: Adds underline on hover for better UX */
+}
+
 .track-list span {
   font-size: 1rem;
   font-weight: 500;
   color: #222;
 }
 
+.track-list strong a {
+  font-weight: bold; /* Ensures artist links remain bold */
+}
+
 .user-info {
-  display: flex;
+  /* display: flex; */
   align-items: center;
   /* justify-content: center; */
   gap: 1rem;
@@ -168,11 +200,10 @@ header button:hover {
 }
 
 .profile-img {
-  width: 72px;
-  height: 72px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #1db954;
 }
 
 #top-genres {
@@ -186,7 +217,7 @@ header button:hover {
 }
 
 #top-genres li {
-  font-size: 0.9em;
+  font-size: 1.1em;
   padding: 0.4em 0.8em;
   border: 1px solid lightgray;
   border-bottom: 4px solid lightgray;
@@ -202,6 +233,30 @@ header button:hover {
   opacity: 0.85;
 }
 
+
+#top-album  img {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  margin-right: 1rem;
+}
+
+#top-album li:hover {
+  opacity: 0.85;
+}
+
+#top-album li {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 0.75rem;
+  border: 1px solid lightgray;
+  border-bottom: 4px solid lightgray;
+  transition: transform 0.2s;
+}
+
+
 #site-footer {
   margin-top: 4em;
   padding: 2em;
@@ -210,4 +265,39 @@ header button:hover {
   font-size: 0.85em;
   text-align: center;
   border-top: 1px solid #ddd;
+  padding-bottom: 300px;
 }
+
+  .hand-title{
+    text-align:center;
+    line-height:1.95;
+    margin: 0 auto;
+  }
+
+  .hand-title .big{
+    font-family: "Pacifico", cursive;
+    font-size: 60px;
+    font-weight: 400;
+    line-height: 55px;
+    color: #111;
+    letter-spacing: 1px;
+    /* text-shadow: 0 4px 12px rgba(0,0,0,.15); */
+  }
+
+  .hand-title .sub{
+    display:block;
+    margin-top:.5rem;
+    font-size: 20px;
+    font-family: "Inter", system-ui, sans-serif;
+    letter-spacing:.15em;
+    text-transform: uppercase;
+    font-weight:600;
+    line-height: 20px;
+    color:#444;
+    opacity:.85;
+  }
+
+  #login-message {
+   display: flex;
+   justify-content: center;
+  }
