@@ -13,7 +13,7 @@ const scopes = [
 function redirectToSpotify() {
   const codeVerifier = generateCodeVerifier();
   generateCodeChallenge(codeVerifier).then(codeChallenge => {
-    localStorage.setItem('code_verifier', codeVerifier); // Changed to localStorage
+    localStorage.setItem('code_verifier', codeVerifier);
     const args = new URLSearchParams({
       response_type: 'code',
       client_id: clientId,
@@ -39,12 +39,26 @@ async function generateCodeChallenge(codeVerifier) {
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+// Helper: get token safely
+function getStoredToken() {
+  const token = localStorage.getItem('access_token');
+  const expiry = localStorage.getItem('token_expiry');
 
+  if (!token || !expiry) return null;
+
+  if (Date.now() > parseInt(expiry, 10)) {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('token_expiry');
+    return null;
+  }
+
+  return token;
+}
 
 // This runs only on callback.html
 if (location.pathname.endsWith('callback.html') && location.search.includes('code=')) {
   const code = new URLSearchParams(location.search).get('code');
-  const codeVerifier = localStorage.getItem('code_verifier'); // Changed to localStorage
+  const codeVerifier = localStorage.getItem('code_verifier');
 
   fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -59,35 +73,23 @@ if (location.pathname.endsWith('callback.html') && location.search.includes('cod
   })
     .then(res => res.json())
     .then(data => {
-      localStorage.setItem('access_token', data.access_token); // Changed to localStorage
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('token_expiry', Date.now() + data.expires_in * 1000);
       window.location = 'index.html';
     });
 }
 
 // check if the user is logged in
 document.addEventListener('DOMContentLoaded', () => {
-  // Try to get token from localStorage or URL hash
-  let token = localStorage.getItem('access_token'); // Changed to localStorage
-
-  // If not in storage, try to parse from URL hash
-  if (!token && window.location.hash) {
-    const hash = window.location.hash;
-    const match = hash.match(/access_token=([^&]*)/);
-    if (match) {
-      token = match[1];
-      localStorage.setItem('access_token', token); // Changed to localStorage
-      // Optional: clear hash from URL
-      history.replaceState(null, null, ' ');
-    }
-  }
+  let token = getStoredToken();
 
   if (token) {
     document.getElementById('login-message').style.display = 'none';
     document.getElementById('login-button').style.display = 'none';
     document.getElementById('logout-button').style.display = 'flex';
     document.querySelectorAll('.card, .list-section').forEach(element => {
-  element.style.filter = 'none';
-});
+      element.style.filter = 'none';
+    });
   } else {
     document.getElementById('login-message').style.display = 'flex';
     document.getElementById('login-button').style.display = 'flex';
@@ -96,191 +98,189 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sub-title').style.display = 'none';
     document.getElementById('shareBtn').style.display = 'none';
     document.querySelectorAll('.card, .list-section').forEach(element => {
-  element.style.filter = 'grayscale(1)';
-});
+      element.style.filter = 'grayscale(1)';
+    });
   }
 });
 
 // Log out function
 function logout() {
-  localStorage.removeItem('access_token'); // Changed to localStorage
-  location.reload(); // reload page to reset state
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('token_expiry');
+  location.reload();
 }
 
-
 // Main dashboard logic (runs on index.html)
-if (location.pathname.endsWith('index.html') && localStorage.getItem('access_token')) { // Changed to localStorage
-  const token = localStorage.getItem('access_token'); // Changed to localStorage
-  const headers = { Authorization: 'Bearer ' + token };
+if (location.pathname.endsWith('index.html')) {
+  const token = getStoredToken();
+  if (!token) {
+    console.log("No valid token, please log in again.");
+  } else {
+    const headers = { Authorization: 'Bearer ' + token };
 
-  // 1. Liked Songs Count
-  fetch('https://api.spotify.com/v1/me/tracks?limit=1', { headers })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('liked-count').textContent = data.total;
-    });
-
-  // 2. Followers Count
-  fetch('https://api.spotify.com/v1/me', { headers })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('followers-count').textContent = data.followers.total;
-      document.getElementById('username').textContent = data.display_name;
-      if (data.images && data.images.length > 0) {
-        document.getElementById('profile-pic').src = data.images[0].url;
-      }
-    });
-
-  // 3. Following Artists Count
-  fetch('https://api.spotify.com/v1/me/following?type=artist', { headers })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('following-count').textContent = data.artists.total;
-    });
-
-  // 4. Playlist Count
-  fetch('https://api.spotify.com/v1/me/playlists?limit=1', { headers })
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('playlists-count').textContent = data.total;
-    });
-
-  // 5. Recently Played
-  fetch('https://api.spotify.com/v1/me/player/recently-played?limit=4', { headers })
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById('recent-tracks');
-      data.items.forEach(item => {
-        const li = document.createElement('li');
-        const artistLinks = item.track.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
-        const trackLink = `<a href="https://open.spotify.com/track/${item.track.id}" target="_blank">${item.track.name}</a>`;
-        const albumImage = item.track.album.images[2]?.url || '';
-        const albumLink = `<a href="https://open.spotify.com/album/${item.track.album.id}" target="_blank"><img src="${albumImage}" alt="${item.track.album.name}" /></a>`;
-
-        li.innerHTML = `
-        ${albumLink}
-        <div>
-          <strong>${artistLinks}</strong><br>
-          <span>${trackLink}</span>
-        </div>
-      `;
-        list.appendChild(li);
+    // 1. Liked Songs Count
+    fetch('https://api.spotify.com/v1/me/tracks?limit=1', { headers })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('liked-count').textContent = data.total;
       });
-    });
 
-  // 6. Top Tracks
-  fetch('https://api.spotify.com/v1/me/top/tracks?limit=4&time_range=long_term', { headers })
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById('top-tracks');
-      data.items.forEach(item => {
-        const li = document.createElement('li');
-        const artistLinks = item.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
-        const trackLink = `<a href="https://open.spotify.com/track/${item.id}" target="_blank">${item.name}</a>`;
-        const albumImage = item.album.images[2]?.url || '';
-        const albumLink = `<a href="https://open.spotify.com/album/${item.album.id}" target="_blank"><img src="${albumImage}" alt="${item.album.name}" /></a>`;
-
-        li.innerHTML = `
-        ${albumLink}
-        <div>
-          <strong>${artistLinks}</strong><br>
-          <span>${trackLink}</span>
-        </div>
-      `;
-        list.appendChild(li);
+    // 2. Followers Count
+    fetch('https://api.spotify.com/v1/me', { headers })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('followers-count').textContent = data.followers.total;
+        document.getElementById('username').textContent = data.display_name;
+        if (data.images && data.images.length > 0) {
+          document.getElementById('profile-pic').src = data.images[0].url;
+        }
       });
-    });
 
-  // 7. Top Genres
-  fetch('https://api.spotify.com/v1/me/top/artists?limit=30&time_range=long_term', { headers })
-    .then(res => res.json())
-    .then(data => {
-      const genreSet = new Set();
+    // 3. Following Artists Count
+    fetch('https://api.spotify.com/v1/me/following?type=artist', { headers })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('following-count').textContent = data.artists.total;
+      });
 
-      data.items.forEach(artist => {
-        artist.genres.forEach(genre => {
-          genreSet.add(genre);
+    // 4. Playlist Count
+    fetch('https://api.spotify.com/v1/me/playlists?limit=1', { headers })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('playlists-count').textContent = data.total;
+      });
+
+    // 5. Recently Played
+    fetch('https://api.spotify.com/v1/me/player/recently-played?limit=4', { headers })
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('recent-tracks');
+        data.items.forEach(item => {
+          const li = document.createElement('li');
+          const artistLinks = item.track.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
+          const trackLink = `<a href="https://open.spotify.com/track/${item.track.id}" target="_blank">${item.track.name}</a>`;
+          const albumImage = item.track.album.images[2]?.url || '';
+          const albumLink = `<a href="https://open.spotify.com/album/${item.track.album.id}" target="_blank"><img src="${albumImage}" alt="${item.track.album.name}" /></a>`;
+
+          li.innerHTML = `
+          ${albumLink}
+          <div>
+            <strong>${artistLinks}</strong><br>
+            <span>${trackLink}</span>
+          </div>
+        `;
+          list.appendChild(li);
         });
       });
 
-      const topGenres = Array.from(genreSet).slice(0, 20);
-      const genreList = document.getElementById('top-genres');
-      topGenres.forEach((genre, index) => {
-        const li = document.createElement('li');
-        li.textContent = genre;
-        genreList.appendChild(li);
-      });
-    });
+    // 6. Top Tracks
+    fetch('https://api.spotify.com/v1/me/top/tracks?limit=4&time_range=long_term', { headers })
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('top-tracks');
+        data.items.forEach(item => {
+          const li = document.createElement('li');
+          const artistLinks = item.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
+          const trackLink = `<a href="https://open.spotify.com/track/${item.id}" target="_blank">${item.name}</a>`;
+          const albumImage = item.album.images[2]?.url || '';
+          const albumLink = `<a href="https://open.spotify.com/album/${item.album.id}" target="_blank"><img src="${albumImage}" alt="${item.album.name}" /></a>`;
 
-
-    // 8. Top Albums
-fetch('https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=long_term', { headers })
-  .then(res => res.json())
-  .then(data => {
-    const albumMap = new Map();
-
-    // Count how many times each album appears
-    data.items.forEach(track => {
-      const album = track.album;
-      if (!albumMap.has(album.id)) {
-        albumMap.set(album.id, { ...album, count: 0 });
-      }
-      albumMap.get(album.id).count++;
-    });
-
-    // Sort albums by play count descending
-    const topAlbums = Array.from(albumMap.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 2); // Take top 2 albums
-
-    const list = document.getElementById('top-album');
-    
-    topAlbums.forEach(album => {
-      const li = document.createElement('li'); // Keep <li>
-
-      const albumImage = album.images[1]?.url || '';
-      const albumLink = `<a href="https://open.spotify.com/album/${album.id}" target="_blank"><img src="${albumImage}" alt="${album.name}" /></a>`;
-      const artistLinks = album.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
-
-      li.innerHTML = `
-        ${albumLink}
-        <div>
-          <strong>${artistLinks}</strong><br>
-          <span>${album.name}</span>
-        </div>
-      `;
-
-      list.appendChild(li);
-    });
-  });
-
-
-    // 9. User Playlists
-      fetch('https://api.spotify.com/v1/me/playlists?limit=10', { headers })
-    .then(res => res.json())
-    .then(data => {
-      const list = document.getElementById('user-playlists');
-      data.items.forEach(playlist => {
-        const li = document.createElement('li');
-
-        const playlistImage = playlist.images[0]?.url || '';
-        const playlistLink = `<a href="${playlist.external_urls.spotify}" target="_blank"><img src="${playlistImage}" alt="${playlist.name}" /></a>`;
-        const ownerLink = `<a href="https://open.spotify.com/user/${playlist.owner.id}" target="_blank">${playlist.owner.display_name}</a>`;
-
-        li.innerHTML = `
-          ${playlistLink}
+          li.innerHTML = `
+          ${albumLink}
           <div>
-            <strong>${playlist.name}</strong><br>
-            <span>by ${ownerLink}</span><br>
-            <span>${playlist.tracks.total} tracks</span>
+            <strong>${artistLinks}</strong><br>
+            <span>${trackLink}</span>
           </div>
         `;
-
-        list.appendChild(li);
+          list.appendChild(li);
+        });
       });
-    });
-  
 
+    // 7. Top Genres
+    fetch('https://api.spotify.com/v1/me/top/artists?limit=30&time_range=long_term', { headers })
+      .then(res => res.json())
+      .then(data => {
+        const genreSet = new Set();
+
+        data.items.forEach(artist => {
+          artist.genres.forEach(genre => {
+            genreSet.add(genre);
+          });
+        });
+
+        const topGenres = Array.from(genreSet).slice(0, 20);
+        const genreList = document.getElementById('top-genres');
+        topGenres.forEach((genre, index) => {
+          const li = document.createElement('li');
+          li.textContent = genre;
+          genreList.appendChild(li);
+        });
+      });
+
+    // 8. Top Albums
+    fetch('https://api.spotify.com/v1/me/top/tracks?limit=50&time_range=long_term', { headers })
+      .then(res => res.json())
+      .then(data => {
+        const albumMap = new Map();
+
+        data.items.forEach(track => {
+          const album = track.album;
+          if (!albumMap.has(album.id)) {
+            albumMap.set(album.id, { ...album, count: 0 });
+          }
+          albumMap.get(album.id).count++;
+        });
+
+        const topAlbums = Array.from(albumMap.values())
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 2);
+
+        const list = document.getElementById('top-album');
+        
+        topAlbums.forEach(album => {
+          const li = document.createElement('li');
+
+          const albumImage = album.images[1]?.url || '';
+          const albumLink = `<a href="https://open.spotify.com/album/${album.id}" target="_blank"><img src="${albumImage}" alt="${album.name}" /></a>`;
+          const artistLinks = album.artists.map(a => `<a href="https://open.spotify.com/artist/${a.id}" target="_blank">${a.name}</a>`).join(', ');
+
+          li.innerHTML = `
+            ${albumLink}
+            <div>
+              <strong>${artistLinks}</strong><br>
+              <span>${album.name}</span>
+            </div>
+          `;
+
+          list.appendChild(li);
+        });
+      });
+
+    // 9. User Playlists
+    fetch('https://api.spotify.com/v1/me/playlists?limit=10', { headers })
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('user-playlists');
+        data.items.forEach(playlist => {
+          const li = document.createElement('li');
+
+          const playlistImage = playlist.images[0]?.url || '';
+          const playlistLink = `<a href="${playlist.external_urls.spotify}" target="_blank"><img src="${playlistImage}" alt="${playlist.name}" /></a>`;
+          const ownerLink = `<a href="https://open.spotify.com/user/${playlist.owner.id}" target="_blank">${playlist.owner.display_name}</a>`;
+
+          li.innerHTML = `
+            ${playlistLink}
+            <div>
+              <strong>${playlist.name}</strong><br>
+              <span>by ${ownerLink}</span><br>
+              <span>${playlist.tracks.total} tracks</span>
+            </div>
+          `;
+
+          list.appendChild(li);
+        });
+      });
+  }
 }
 
 // Share button functionality
@@ -302,11 +302,9 @@ shareBtn.addEventListener("click", async () => {
   html2canvas(container, { useCORS: true, logging: false }).then((canvas) => {
     if (connectionDiv) connectionDiv.style.display = "";
 
-    // Show preview
     previewImg.src = canvas.toDataURL("image/png");
     previewModal.style.display = "flex";
 
-    // Prepare file for share/clipboard/download
     canvas.toBlob((blob) => {
       window.shareFile = new File([blob], `${username}-spotify-stats.png`, { type: "image/png" });
       window.shareBlob = blob;
@@ -315,22 +313,18 @@ shareBtn.addEventListener("click", async () => {
   });
 });
 
-// Close preview
 closePreview.addEventListener("click", () => {
   previewModal.style.display = "none";
 });
 
-// Share (native)
 shareConfirm.addEventListener("click", async () => {
   const file = window.shareFile;
     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ title: "My Spotify Stats 🎵", files: [file] });
     }
       previewModal.style.display = "none";
-
 });
 
-// Copy to clipboard
 copyConfirm.addEventListener("click", async () => {
   const blob = window.shareBlob;
     if (navigator.clipboard && navigator.clipboard.write) {
@@ -339,7 +333,6 @@ copyConfirm.addEventListener("click", async () => {
   previewModal.style.display = "none";
 });
 
-// Download
 downloadConfirm.addEventListener("click", () => {
   const blob = window.shareBlob;
   const url = URL.createObjectURL(blob);
