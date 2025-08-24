@@ -17,7 +17,7 @@ This web app is a Spotify stats dashboard that gives you a clear view of your mu
 
 1. Open a terminal : 
 ```
-git clone https://github.com/kenybapin/JS-spotify-app/
+git clone https://github.com/kenybapin/spotify.git
 ```
 2. Modify the `clientId` and `redirectUri` in script.js
 3. Run index.html with a web server.
