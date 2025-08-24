@@ -43,17 +43,40 @@ For wider access Go to *App > Extension Request*. Spotify will review your app t
   The page reloads, and without a token, the user is prompted to log in again.
 
 
-#### Login Steps with PKCE
-
-Authentification flow : <br>
-[1. Login] → [2. User Auth] → [3. Exchange Code] → [4. Receive Token] → [5. Store & Redirect] → [6. Use Token]
 
 
-1. Creates `code_verifier` + `code_challenge`, redirects to `/authorize` with `client_id`, `redirect_uri`, `scope`, `code_challenge`.
-2. User signs into Spotify and approves access.
-3. Spotify redirects to `callback.html` with a code, which is exchanged via POST to `/api/token` using `code_verifier`.
-4. Spotify replies. Response has `access_token` + `expires_in`.
-5. Application Token + expiry stored in `localStorage`; user sent to main page `index.html`.
-6. App calls Spotify's API. Requests use `Authorization: Bearer <token>`. Expired token → re-auth (Step 1).
+--
+
+
+# Spotify Authorization Flow
+
+1. **Generate Code & Redirect**  
+   - Create a `code_verifier` and `code_challenge`.  
+   - Redirect the user to Spotify’s `/authorize` page with:
+     - `client_id`
+     - `redirect_uri`
+     - `scope`
+     - `code_challenge`
+
+2. **User Login & Approval**  
+   - The user signs into Spotify and grants access.
+
+3. **Receive Authorization Code**  
+   - Spotify redirects to `callback.html` with a `code`.  
+   - Exchange the `code` via POST to `/api/token` using the `code_verifier`.
+
+4. **Receive Access Token**  
+   - Spotify responds with:
+     - `access_token`
+     - `expires_in`
+
+5. **Store Token & Redirect**  
+   - Save the token and expiry in `localStorage`.  
+   - Redirect the user to the main page (`index.html`).
+
+6. **API Requests**  
+   - Make API requests using `Authorization: Bearer <token>`.  
+   - If the token is expired, repeat from Step 1.
+
 
 
