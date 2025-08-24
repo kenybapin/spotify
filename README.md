@@ -35,7 +35,7 @@ For wider access Go to *App > Extension Request*. Spotify will review your app t
 # Notes
 
 - This app uses the **PKCE extension** of the OAuth 2.0 Authorization Code Flow.  
-  No app secret is needed, and nothing is stored in the browser. This makes it safe for public apps and ensures a **secure exchange**, as the code-to-token swap requires a one-time **code_verifier**.
+  No app secret is needed, as the code-to-token swap requires a one-time **code_verifier**.
 
 - **callback.html** handles the OAuth process: it retrieves the code, exchanges it for a token, stores it, and then redirects.
 
