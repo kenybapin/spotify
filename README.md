@@ -6,8 +6,8 @@ This web app is a Spotify stats dashboard that gives you a clear view of your mu
 
 ## Requirements
 * Install a local web server.
-* Spotify Premium account ([sign up here](https://www.spotify.com)).
-* A spotify APP : Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/login) and create an app:
+* A Spotify account ([sign up here](https://www.spotify.com)).
+* Create a spotify APP : Go to your [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/login) and create an app:
   - Note your **CLIENT ID**
   - In the app settings, add the redirect URI *(Change the port number according to your web server's setting)*:  
     `http://127.0.0.1:<port>/api_callback`  
